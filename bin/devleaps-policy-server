@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Navigate to the project root directory
+cd "$(dirname "$0")/.." || exit 1
+
+# Run the policy main.py using uv
+echo "Starting example policy server..."
+uv run python -m devleaps.policies.example.main

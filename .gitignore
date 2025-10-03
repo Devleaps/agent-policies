@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+/venv/
+ENV/
+env/
+.env
+*.pyc
+.ruff_cache/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Project specific
+*.log
+hook_server.pid
+hook_client.pid
+.hook_server_port
+internal/
+
+# OS
+.DS_Store
+Thumbs.db

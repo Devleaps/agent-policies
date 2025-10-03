@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Get the directory of this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Check for editor parameter
+if [ -z "$1" ]; then
+    echo "Usage: $0 <editor> (e.g., claude-code or cursor)" >&2
+    exit 2
+fi
+
+EDITOR="$1"
+shift
+
+# Run the client with editor and remaining arguments using uv
+uv run --directory "$PROJECT_ROOT" python "$PROJECT_ROOT/devleaps/policies/client/client.py" "$EDITOR" "$@"
