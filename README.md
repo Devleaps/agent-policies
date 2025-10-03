@@ -10,7 +10,7 @@ This framework supports **Claude Code**. Support for **Cursor** is in beta.
 
 ### Automating Decisions
 
-Where rule files can be forgotten or ignored completely, policies are significantly stronger. Policies are not avoidable.
+Rule files can be forgotten or ignored completely by LLMs. Policies are unavoidable:
 
 ```python
 def rudimentary_terraform_rule(input_data: ToolUseEvent):
@@ -30,7 +30,7 @@ def rudimentary_terraform_rule(input_data: ToolUseEvent):
 
 ### Automating Guidance
 
-Aside from denying and allowing automatically, policies can provide guidance when it looks like agents are going off track:
+Aside from denying and allowing automatically, policies can also provide guidance:
 
 ```python
 def rudimentary_guidance_for_python(input_data: ToolUseEvent):
@@ -45,25 +45,21 @@ def rudimentary_guidance_for_python(input_data: ToolUseEvent):
 > <img width="652" height="167" alt="Screenshot 2025-10-03 at 16 15 21" src="https://github.com/user-attachments/assets/5ee865d3-edd3-4c18-92d2-b984dd0582da" />
 
 > [!WARNING]  
-> Be aware with automatically allowing bash. Bash commands can contain control operators and separators involving more complex parsing. Consider also commands such as `find` having unsafe options like `-exec`.
-
-At DevLeaps we also have an internal policy set, which is not included in this project. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) which contains a rudimentary bash middleware to demonstrate what is possible with the framework.
+> Be careful automatically allowing bash tool use. Bash tools use strings commonly invole more than just one command. Consider also commands such as `find` having unsafe options like `-exec`.
 
 ## Usage
 
-Have a look at the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) as a starting point!
-
-It contains:
-- A complete example server with policies and middleware.
-- Rudimentary policies on how to automatically deny, allow and provide guidance.
-- Rudimentary middleware demonstrating how multi-command tool use could be handled.
+At DevLeaps we developed an internal policy set for AI Agents. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) as a starting point The example server contains:
+- A basic server setup demonstrating the use of policies and middleware.
+- Rudimentary policies showcasing how to automatically deny, allow and provide guidance.
+- Rudimentary middleware showcasing how multi-command tool use could be handled.
 
 **To run the example server:**
 ```bash
 devleaps-policy-example-server
 ```
 
-This starts a minimal server with just these example policies.
+This starts a minimal server running just our example policies.
 
 ## Architecture
 
