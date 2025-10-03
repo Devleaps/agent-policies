@@ -1,6 +1,6 @@
 # AI Agent Policies
 
-Policies turn your [Cursor Rules](https://cursor.com/docs/context/rules) or [CLAUDE.md](https://docs.claude.com/en/docs/claude-code/memory) into hard guardrails which an AI Agent cannot simply ignore, or forget. They handle what to do when an agent wants to make a decision, along with other [hooks-supported events](devleaps/policies/server/common/models.py). Policies can yield both decisions and guidance.
+Policies turn your [Cursor Rules](https://cursor.com/docs/context/rules) or [CLAUDE.md](https://docs.claude.com/en/docs/claude-code/memory) into hard guardrails which an AI Agent cannot simply ignore, or forget. They handle what to do when an agent wants to make a decision, along with other [hooks-supported events](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/server/common/models.py). Policies can yield both decisions and guidance.
 
 This framework supports **Claude Code**. Support for **Cursor** is in beta.
 
@@ -33,7 +33,7 @@ def rudimentary_guidance_for_python(input_data: ToolUseEvent):
         yield PolicyGuidance(content="Consider using pytest instead of running test files directly")
 ```
 
-Be aware that tool use with bash can contain control operators and separators, moreover, some commands allow execution of others: Consider for example `find` with `-exec`. Be careful what you whitelist, and how you parse Bash. At DevLeaps we also have an internal policy set, which is not included in this project. To create your own, refer to the [example server](devleaps/policies/example/main.py) which contains a rudimentary bash middleware to demonstrate what is possible with the framework.
+Be aware that tool use with bash can contain control operators and separators, moreover, some commands allow execution of others: Consider for example `find` with `-exec`. Be careful what you whitelist, and how you parse Bash. At DevLeaps we also have an internal policy set, which is not included in this project. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) which contains a rudimentary bash middleware to demonstrate what is possible with the framework.
 
 ## Examples
 
@@ -53,7 +53,7 @@ Policies can automatically allow safe commands without interrupting developers:<
 
 ## Usage
 
-Have a look at the [example server](devleaps/policies/example/main.py) as a starting point!
+Have a look at the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) as a starting point!
 
 It contains:
 - A complete example server with policies and middleware.
