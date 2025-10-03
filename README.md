@@ -43,15 +43,13 @@ Be aware that tool use with bash can contain control operators and separators, m
 
 Policies can prevent Bash dangerous bash commands completely:<br/>
 
-> <img src="https://github.com/user-attachments/assets/ccc775f1-0fb8-4072-bdbe-96fecc5ea2db" />
+> <img width="648" height="133" alt="Screenshot 2025-10-03 at 16 15 29" src="https://github.com/user-attachments/assets/4659a391-2e96-431f-85e7-7d3973f2d101" />
 
 Policies can provide guidance to agents when they go off track:<br/>
 
-> <img src="https://github.com/user-attachments/assets/a9f26fba-ae26-40ff-ab53-92a9a646428c" />
+> <img width="652" height="167" alt="Screenshot 2025-10-03 at 16 15 21" src="https://github.com/user-attachments/assets/5ee865d3-edd3-4c18-92d2-b984dd0582da" />
 
-Policies can automatically allow safe commands without interrupting developers:<br/>
-
-> <img src="https://github.com/user-attachments/assets/da20d0ea-6ba0-4626-bdb0-10dba4f6a0b1" />
+Policies can also automatically allow safe commands without interrupting developers, similar to whitelists.<br/>
 
 ## Usage
 
