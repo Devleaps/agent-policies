@@ -8,7 +8,9 @@ This framework supports **Claude Code**. Support for **Cursor** is in beta.
 
 ## Why Policies
 
-Policies are significantly stronger than rules. Rule files can be forgotten or ignored completely, whereas policies are unavoidable:
+### Automating Decisions
+
+Where rule files can be forgotten or ignored completely, policies are significantly stronger. Policies are not avoidable.
 
 ```python
 def rudimentary_terraform_rule(input_data: ToolUseEvent):
@@ -24,7 +26,11 @@ def rudimentary_terraform_rule(input_data: ToolUseEvent):
         yield PolicyDecision(action=PolicyAction.ALLOW)
 ```
 
-Aside from denying and allowing automatically, policies can also provide guidance when it seems agents are going off track or missing standards:
+> <img width="648" height="133" alt="Screenshot 2025-10-03 at 16 15 29" src="https://github.com/user-attachments/assets/4659a391-2e96-431f-85e7-7d3973f2d101" />
+
+### Automating Guidance
+
+Aside from denying and allowing automatically, policies can provide guidance when it looks like agents are going off track:
 
 ```python
 def rudimentary_guidance_for_python(input_data: ToolUseEvent):
@@ -35,21 +41,13 @@ def rudimentary_guidance_for_python(input_data: ToolUseEvent):
         yield PolicyGuidance(content="Consider using pytest instead of running test files directly")
 ```
 
-Be aware that tool use with bash can contain control operators and separators, moreover, some commands allow execution of others: Consider for example `find` with `-exec`. Be careful what you whitelist, and how you parse Bash. At DevLeaps we also have an internal policy set, which is not included in this project. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) which contains a rudimentary bash middleware to demonstrate what is possible with the framework.
-
-## Examples
-
-### Real World Examples
-
-Policies can prevent Bash dangerous bash commands completely:<br/>
-
-> <img width="648" height="133" alt="Screenshot 2025-10-03 at 16 15 29" src="https://github.com/user-attachments/assets/4659a391-2e96-431f-85e7-7d3973f2d101" />
-
-Policies can provide guidance to agents when they go off track:<br/>
 
 > <img width="652" height="167" alt="Screenshot 2025-10-03 at 16 15 21" src="https://github.com/user-attachments/assets/5ee865d3-edd3-4c18-92d2-b984dd0582da" />
 
-Policies can also automatically allow safe commands without interrupting developers, similar to whitelists.<br/>
+> [!WARNING]  
+> Be aware with automatically allowing bash. Bash commands can contain control operators and separators involving more complex parsing. Consider also commands such as `find` having unsafe options like `-exec`.
+
+At DevLeaps we also have an internal policy set, which is not included in this project. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) which contains a rudimentary bash middleware to demonstrate what is possible with the framework.
 
 ## Usage
 
