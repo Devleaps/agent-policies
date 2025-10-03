@@ -1,5 +1,7 @@
 # AI Agent Policies
 
+[![PyPI](https://img.shields.io/pypi/v/devleaps-agent-policies.svg)](https://pypi.org/project/devleaps-agent-policies/)
+
 Policies turn your [Cursor Rules](https://cursor.com/docs/context/rules) or [CLAUDE.md](https://docs.claude.com/en/docs/claude-code/memory) into hard guardrails which an AI Agent cannot simply ignore, or forget. They handle what to do when an agent wants to make a decision, along with other [hooks-supported events](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/server/common/models.py). Policies can yield both decisions and guidance.
 
 This framework supports **Claude Code**. Support for **Cursor** is in beta.
