@@ -13,17 +13,11 @@ This framework supports **Claude Code**. Support for **Cursor** is in beta.
 Rule files can be forgotten or ignored completely by LLMs. Policies are unavoidable:
 
 ```python
-def rudimentary_terraform_rule(input_data: ToolUseEvent):
-    if not input_data.tool_is_bash:
-        return
+if re.match(r'^terraform\s+apply(?:\s|$)', command):
+    yield PolicyDecision(action=PolicyAction.DENY, reason="terraform apply is not allowed. Use `terraform plan` instead.")
 
-    command = input_data.command.strip()
-
-    if re.match(r'^terraform\s+apply(?:\s|$)', command):
-        yield PolicyDecision(action=PolicyAction.DENY, reason="terraform apply is not allowed. Use `terraform plan` instead.")
-
-    if re.match(r'^terraform\s+(fmt|plan)(?:\s|$)', command):
-        yield PolicyDecision(action=PolicyAction.ALLOW)
+if re.match(r'^terraform\s+(fmt|plan)(?:\s|$)', command):
+    yield PolicyDecision(action=PolicyAction.ALLOW)
 ```
 
 > <img width="648" height="133" alt="Screenshot 2025-10-03 at 16 15 29" src="https://github.com/user-attachments/assets/4659a391-2e96-431f-85e7-7d3973f2d101" />
@@ -33,12 +27,8 @@ def rudimentary_terraform_rule(input_data: ToolUseEvent):
 Aside from denying and allowing automatically, policies can also provide guidance:
 
 ```python
-def rudimentary_guidance_for_python(input_data: ToolUseEvent):
-    if not input_data.tool_is_bash:
-        return
-
-    if re.match(r'^python\s+test_', input_data.command):
-        yield PolicyGuidance(content="Consider using pytest instead of running test files directly")
+if re.match(r'^python\s+test_', input_data.command):
+    yield PolicyGuidance(content="Consider using pytest instead of running test files directly")
 ```
 
 
