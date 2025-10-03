@@ -22,6 +22,9 @@ if re.match(r'^terraform\s+(fmt|plan)(?:\s|$)', command):
 
 > <img width="648" height="133" alt="Screenshot 2025-10-03 at 16 15 29" src="https://github.com/user-attachments/assets/4659a391-2e96-431f-85e7-7d3973f2d101" />
 
+> [!WARNING]  
+> Be aware when automatically allowing that Bash tools use strings can invole more than one underlying tool. Consider also commands such as `find` having unsafe options like `-exec`.
+
 ### Automating Guidance
 
 Aside from denying and allowing automatically, policies can also provide guidance:
@@ -33,9 +36,6 @@ if re.match(r'^python\s+test_', input_data.command):
 
 
 > <img width="652" height="167" alt="Screenshot 2025-10-03 at 16 15 21" src="https://github.com/user-attachments/assets/5ee865d3-edd3-4c18-92d2-b984dd0582da" />
-
-> [!WARNING]  
-> Be careful automatically allowing bash tool use. Bash tools use strings commonly invole more than just one command. Consider also commands such as `find` having unsafe options like `-exec`.
 
 ## Usage
 
