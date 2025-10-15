@@ -1,6 +1,6 @@
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Callable, List, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .enums import PermissionDecision, ToolName
 from .output_base import BaseHookOutput
