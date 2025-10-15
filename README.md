@@ -244,6 +244,22 @@ The `devleaps-policy-client cursor` command will forward hook events to the poli
 
 </details>
 
+## Sessions
+
+Each Claude Code or Cursor session receives a unique `session_id`. Policies can use this to track context across multiple hook events within the same session, enabling stateful policy decisions. See the [session state utility](devleaps/policies/server/session/state.py) to store and retrieve per-session data.
+
+## Policy Bundles
+
+Policies can be organized into bundles to group related rules for specific workflows or project types. This allows you to compose different policy sets without having to manage separate server configurations.
+
+**How bundles work:**
+- Universal policies (registered with `bundle=None`) are always enforced
+- Bundle-specific policies are only enforced when enabled via `--bundle` flag
+- Multiple bundles can be enabled simultaneously: `devleaps-policy-client --bundle uv claude-code`
+- Bundles can coordinate through shared session state
+
+See the [uv example](devleaps/policies/example/main.py) for a working one-rule bundle implementation.
+
 ## Development
 
 This project is built with [uv](https://docs.astral.sh/uv/).

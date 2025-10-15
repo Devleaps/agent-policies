@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+import argparse
 import json
 import os
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import requests
 
@@ -14,7 +15,7 @@ def get_server_url() -> str:
     return os.environ.get("HOOK_SERVER_URL", DEFAULT_SERVER_URL)
 
 
-def forward_hook(editor: str, payload: Dict[str, Any]) -> int:
+def forward_hook(editor: str, bundles: List[str], payload: Dict[str, Any]) -> int:
     server_url = get_server_url()
     hook_event_name = payload.get("hook_event_name")
 
@@ -22,13 +23,19 @@ def forward_hook(editor: str, payload: Dict[str, Any]) -> int:
         print("Missing hook_event_name in payload", file=sys.stderr)
         return 2
 
+    # Wrap payload with bundles
+    wrapped_payload = {
+        "bundles": bundles,
+        "event": payload
+    }
+
     # Direct path mapping: /policy/{editor}/{hook_event_name}
     endpoint = f"/policy/{editor}/{hook_event_name}"
 
     try:
         response = requests.post(
             f"{server_url}{endpoint}",
-            json=payload,
+            json=wrapped_payload,
             timeout=TIMEOUT_SECONDS
         )
 
@@ -61,16 +68,27 @@ def forward_hook(editor: str, payload: Dict[str, Any]) -> int:
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: client.py <editor> (e.g., claude-code or cursor)", file=sys.stderr)
-        sys.exit(2)
+    parser = argparse.ArgumentParser(
+        description="Policy client for AI agent hooks"
+    )
+    parser.add_argument(
+        "--bundle",
+        action="append",
+        dest="bundles",
+        default=[],
+        help="Enable a policy bundle (can be specified multiple times)"
+    )
+    parser.add_argument(
+        "editor",
+        help="Editor name (e.g., claude-code or cursor)"
+    )
 
-    editor = sys.argv[1]
+    args = parser.parse_args()
 
     try:
         hook_json = sys.stdin.read().strip()
         payload = json.loads(hook_json)
-        exit_code = forward_hook(editor, payload)
+        exit_code = forward_hook(args.editor, args.bundles, payload)
         sys.exit(exit_code)
     except json.JSONDecodeError as e:
         print(f"Invalid JSON in hook payload: {e}", file=sys.stderr)
