@@ -5,6 +5,15 @@ from typing import Any, Dict, List, Optional
 from .enums import SourceClient
 
 
+@dataclass
+class BaseEvent:
+    """Base class for all hook events."""
+    session_id: str
+    source_client: SourceClient
+    workspace_roots: Optional[List[str]] = None
+    source_event: Any = None  # Original hook input data object
+
+
 class PolicyAction(str, Enum):
     """Generic policy decision actions"""
     ALLOW = "allow"
@@ -38,41 +47,33 @@ class PolicyGuidance:
 
 
 @dataclass
-class ToolUseEvent:
+class ToolUseEvent(BaseEvent):
     """
     Generic representation of tool/command execution.
     Maps from:
     - Claude Code: PreToolUse (Bash, WebFetch, MCP tools)
     - Cursor: beforeShellExecution, beforeMCPExecution
     """
-    session_id: str
-    tool_name: str  # "bash", "mcp__*", etc.
-    source_client: SourceClient
+    tool_name: str = ""  # "bash", "mcp__*", etc.
     tool_is_bash: bool = False
     tool_is_mcp: bool = False
     command: Optional[str] = None  # For bash-like tools
     parameters: Optional[Dict[str, Any]] = None  # For other tools
-    workspace_roots: Optional[List[str]] = None
-    source_event: Any = None  # Original hook input data object
 
 
 @dataclass
-class PromptSubmitEvent:
+class PromptSubmitEvent(BaseEvent):
     """
     Generic representation of user prompt submission.
     Maps from:
     - Claude Code: UserPromptSubmit
     - Cursor: beforeSubmitPrompt
     """
-    session_id: str
-    source_client: SourceClient
     prompt: Optional[str] = None
-    workspace_roots: Optional[List[str]] = None
-    source_event: Any = None  # Original hook input data object
 
 
 @dataclass
-class FileEditEvent:
+class FileEditEvent(BaseEvent):
     """
     Generic representation of file edit events (BEFORE they happen).
     Maps from:
@@ -81,31 +82,23 @@ class FileEditEvent:
 
     Policies can ALLOW or DENY file edits before they are executed.
     """
-    session_id: str
-    source_client: SourceClient
     file_path: Optional[str] = None
     operation: Optional[str] = None  # "edit", "write", etc.
-    workspace_roots: Optional[List[str]] = None
-    source_event: Any = None  # Original hook input data object
 
 
 @dataclass
-class StopEvent:
+class StopEvent(BaseEvent):
     """
     Generic representation of stop/interrupt events.
     Maps from:
     - Claude Code: Stop, SubagentStop
     - Cursor: stop
     """
-    session_id: str
-    source_client: SourceClient
     stop_type: Optional[str] = None  # "stop", "subagent_stop", etc.
-    workspace_roots: Optional[List[str]] = None
-    source_event: Any = None  # Original hook input data object
 
 
 @dataclass
-class HookEvent:
+class HookEvent(BaseEvent):
     """
     Catch-all for hooks that don't fit specific categories.
     Maps from:
@@ -113,8 +106,4 @@ class HookEvent:
     - Cursor: beforeReadFile
     - Any future hooks for that matter
     """
-    session_id: str
-    source_client: SourceClient
-    hook_type: str  # "session_start", "session_end", "notification", etc.
-    workspace_roots: Optional[List[str]] = None
-    source_event: Any = None  # Original hook input data object
+    hook_type: str = ""  # "session_start", "session_end", "notification", etc.

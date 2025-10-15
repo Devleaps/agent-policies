@@ -7,7 +7,7 @@ from .registry import registry
 logger = logging.getLogger(__name__)
 
 
-def execute_handlers_generic(input_data) -> List[Union[PolicyDecision, PolicyGuidance]]:
+def execute_handlers_generic(input_data, enabled_bundles: List[str] = []) -> List[Union[PolicyDecision, PolicyGuidance]]:
     """
     Execute middleware and handlers with generic event input and return generic results.
 
@@ -16,17 +16,21 @@ def execute_handlers_generic(input_data) -> List[Union[PolicyDecision, PolicyGui
     2. Execute all registered handlers
     3. Return raw policy results (decisions and guidance)
 
+    Args:
+        input_data: The input event data
+        enabled_bundles: List of enabled bundle names, or None for all bundles
+
     Aggregation of results is done by the mapper layer for each editor.
     """
-    processed_inputs = _process_middleware_pipeline(input_data)
-    all_results = _execute_all_handlers(processed_inputs)
+    processed_inputs = _process_middleware_pipeline(input_data, enabled_bundles)
+    all_results = _execute_all_handlers(processed_inputs, enabled_bundles)
     return all_results
 
 
-def _process_middleware_pipeline(input_data):
-    """Process input through middleware pipeline."""
+def _process_middleware_pipeline(input_data, enabled_bundles: List[str] = []):
+    """Process input through middleware pipeline, filtered by enabled bundles."""
     current_inputs = [input_data]
-    middleware_functions = registry.get_middleware(type(input_data))
+    middleware_functions = registry.get_middleware(type(input_data), enabled_bundles)
 
     for middleware in middleware_functions:
         next_inputs = []
@@ -56,12 +60,12 @@ def _process_middleware_pipeline(input_data):
     return current_inputs
 
 
-def _execute_all_handlers(processed_inputs):
-    """Execute all handlers on processed inputs and collect results."""
+def _execute_all_handlers(processed_inputs, enabled_bundles: List[str] = []):
+    """Execute all handlers on processed inputs and collect results, filtered by enabled bundles."""
     if not processed_inputs:
         return []
 
-    handlers = registry.get_handlers(type(processed_inputs[0]))
+    handlers = registry.get_handlers(type(processed_inputs[0]), enabled_bundles)
     all_results = []
 
     for processed_input in processed_inputs:
