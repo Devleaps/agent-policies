@@ -108,7 +108,7 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
           {
             "matcher": "*",
             "type": "command",
-            "command": "devleaps-policy-client claude-code"
+            "command": "devleaps-policy-client"
           }
         ]
       }
@@ -119,7 +119,7 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
           {
             "matcher": "*",
             "type": "command",
-            "command": "devleaps-policy-client claude-code"
+            "command": "devleaps-policy-client"
           }
         ]
       }
@@ -130,7 +130,7 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
           {
             "matcher": "*",
             "type": "command",
-            "command": "devleaps-policy-client claude-code"
+            "command": "devleaps-policy-client"
           }
         ]
       }
@@ -141,7 +141,7 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
           {
             "matcher": "*",
             "type": "command",
-            "command": "devleaps-policy-client claude-code"
+            "command": "devleaps-policy-client"
           }
         ]
       }
@@ -152,7 +152,7 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
           {
             "matcher": "*",
             "type": "command",
-            "command": "devleaps-policy-client claude-code"
+            "command": "devleaps-policy-client"
           }
         ]
       }
@@ -163,7 +163,7 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
           {
             "matcher": "*",
             "type": "command",
-            "command": "devleaps-policy-client claude-code"
+            "command": "devleaps-policy-client"
           }
         ]
       }
@@ -174,7 +174,7 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
           {
             "matcher": "*",
             "type": "command",
-            "command": "devleaps-policy-client claude-code"
+            "command": "devleaps-policy-client"
           }
         ]
       }
@@ -185,7 +185,7 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
           {
             "matcher": "*",
             "type": "command",
-            "command": "devleaps-policy-client claude-code"
+            "command": "devleaps-policy-client"
           }
         ]
       }
@@ -196,7 +196,7 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
           {
             "matcher": "*",
             "type": "command",
-            "command": "devleaps-policy-client claude-code"
+            "command": "devleaps-policy-client"
           }
         ]
       }
@@ -219,28 +219,28 @@ Create or edit `~/.cursor/hooks.json`:
   "version": 1,
   "hooks": {
     "beforeShellExecution": [
-      { "command": "devleaps-policy-client cursor" }
+      { "command": "devleaps-policy-client" }
     ],
     "beforeMCPExecution": [
-      { "command": "devleaps-policy-client cursor" }
+      { "command": "devleaps-policy-client" }
     ],
     "afterFileEdit": [
-      { "command": "devleaps-policy-client cursor" }
+      { "command": "devleaps-policy-client" }
     ],
     "beforeReadFile": [
-      { "command": "devleaps-policy-client cursor" }
+      { "command": "devleaps-policy-client" }
     ],
     "beforeSubmitPrompt": [
-      { "command": "devleaps-policy-client cursor" }
+      { "command": "devleaps-policy-client" }
     ],
     "stop": [
-      { "command": "devleaps-policy-client cursor" }
+      { "command": "devleaps-policy-client" }
     ]
   }
 }
 ```
 
-The `devleaps-policy-client cursor` command will forward hook events to the policy server running on `localhost:8338`.
+The `devleaps-policy-client` command will forward hook events to the policy server running on `localhost:8338`.
 
 </details>
 
@@ -248,14 +248,41 @@ The `devleaps-policy-client cursor` command will forward hook events to the poli
 
 Each Claude Code or Cursor session receives a unique `session_id`. Policies can use this to track context across multiple hook events within the same session, enabling stateful policy decisions. See the [session state utility](devleaps/policies/server/session/state.py) to store and retrieve per-session data.
 
+## Configuration
+
+The client supports centralized configuration via JSON files:
+
+**Home-level config** (`~/.agent-policies/config.json`):
+```json
+{
+  "bundles": ["python", "git"],
+  "editor": "claude-code",
+  "server_url": "http://localhost:8338"
+}
+```
+
+**Project-level config** (`.agent-policies/config.json`):
+```json
+{
+  "bundles": ["terraform"]
+}
+```
+
+Configuration is merged with project settings overriding home settings.
+
+**Available fields:**
+- `bundles`: List of enabled policy bundles (default: `[]`)
+- `editor`: Editor name, ignored by client (default: `claude-code`)
+- `server_url`: Policy server endpoint (default: `http://localhost:8338`)
+
 ## Policy Bundles
 
 Policies can be organized into bundles to group related rules for specific workflows or project types. This allows you to compose different policy sets without having to manage separate server configurations.
 
 **How bundles work:**
 - Universal policies (registered with `bundle=None`) are always enforced
-- Bundle-specific policies are only enforced when enabled via `--bundle` flag
-- Multiple bundles can be enabled simultaneously: `devleaps-policy-client --bundle uv claude-code`
+- Bundle-specific policies are only enforced when enabled in config
+- Multiple bundles can be enabled: set `"bundles": ["bundle1", "bundle2"]` in config
 - Bundles can coordinate through shared session state
 
 See the [uv example](devleaps/policies/example/main.py) for a working one-rule bundle implementation.
