@@ -11,6 +11,7 @@ from devleaps.policies.server.common.enums import SourceClient
 from devleaps.policies.server.common.models import (
     PolicyAction,
     PolicyDecision,
+    PostToolUseEvent,
     ToolUseEvent,
 )
 from devleaps.policies.server.executor import execute_handlers_generic
@@ -23,13 +24,13 @@ def setup_example_policies():
     from devleaps.policies.example.main import (
         bash_split_middleware,
         terraform_rule,
-        python_test_file_rule,
+        python_test_file_post_guidance_rule,
     )
 
     registry = get_registry()
     registry.register_middleware(ToolUseEvent, bash_split_middleware)
     registry.register_handler(ToolUseEvent, terraform_rule)
-    registry.register_handler(ToolUseEvent, python_test_file_rule)
+    registry.register_handler(PostToolUseEvent, python_test_file_post_guidance_rule)
 
 
 def create_tool_use_event(command: str, tool_name: str = "Bash") -> ToolUseEvent:

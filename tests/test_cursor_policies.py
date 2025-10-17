@@ -23,13 +23,11 @@ def setup_example_policies():
     from devleaps.policies.example.main import (
         bash_split_middleware,
         terraform_rule,
-        python_test_file_rule,
     )
 
     registry = get_registry()
     registry.register_middleware(ToolUseEvent, bash_split_middleware)
     registry.register_handler(ToolUseEvent, terraform_rule)
-    registry.register_handler(ToolUseEvent, python_test_file_rule)
 
 
 def create_cursor_shell_event(command: str) -> ToolUseEvent:
