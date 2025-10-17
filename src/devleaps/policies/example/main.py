@@ -6,6 +6,7 @@ from devleaps.policies.server.common.models import (
     PolicyAction,
     PolicyDecision,
     PolicyGuidance,
+    PostToolUseEvent,
     ToolUseEvent,
 )
 from devleaps.policies.server.server import app, get_registry
@@ -36,13 +37,36 @@ def terraform_rule(input_data: ToolUseEvent):
         yield PolicyDecision(action=PolicyAction.ALLOW)
 
 
-def python_test_file_rule(input_data: ToolUseEvent):
-    if not input_data.tool_is_bash:
+def python_test_file_post_guidance_rule(input_data: PostToolUseEvent):
+    """Provide guidance after running tests with python directly."""
+    if not input_data.tool_is_bash or not input_data.command:
         return
 
     if re.match(r'python3?\s+.*test_.*\.py', input_data.command.strip()):
-        yield PolicyDecision(action=PolicyAction.DENY, reason="Use `pytest` to run tests instead of python directly.")
-        yield PolicyGuidance(content="Consider using pytest with specific test markers or paths.")
+        yield PolicyGuidance(content="Consider using pytest instead of running test files directly. Use `pytest` for better test discovery and reporting.")
+
+
+def uv_bundle_rule(input_data: ToolUseEvent):
+    if not input_data.tool_is_bash:
+        return
+
+    command = input_data.command.strip()
+
+    # Block pip commands, suggest uv
+    if re.match(r'^pip(?:\s|$)', command):
+        yield PolicyDecision(action=PolicyAction.DENY, reason="Use `uv` instead of pip for package management.")
+        yield PolicyGuidance(content="Replace `pip install` with `uv pip install` or `uv add` for dependency management.")
+        return
+
+    # Block python -m pip, suggest uv
+    if re.match(r'^python3?\s+-m\s+pip(?:\s|$)', command):
+        yield PolicyDecision(action=PolicyAction.DENY, reason="Use `uv` instead of python -m pip.")
+        return
+
+    # Block direct python usage for scripts, suggest uv run
+    if re.match(r'^python3?\s+[^-]', command) and not re.match(r'^python3?\s+.*test', command):
+        yield PolicyDecision(action=PolicyAction.DENY, reason="Use `uv run python` to execute scripts.")
+        return
 
 
 if __name__ == "__main__":
@@ -50,5 +74,7 @@ if __name__ == "__main__":
     registry = get_registry()
     registry.register_middleware(ToolUseEvent, bash_split_middleware)
     registry.register_handler(ToolUseEvent, terraform_rule)
-    registry.register_handler(ToolUseEvent, python_test_file_rule)
+    registry.register_handler(PostToolUseEvent, python_test_file_post_guidance_rule)
+    # Register the uv bundle rule
+    registry.register_handler(ToolUseEvent, uv_bundle_rule, bundle="uv")
     uvicorn.run(app, host="0.0.0.0", port=8338, log_level="info")
