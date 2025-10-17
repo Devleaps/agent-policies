@@ -1,35 +1,35 @@
 #!/usr/bin/env python3
 import json
-import os
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import requests
 
-DEFAULT_SERVER_URL = "http://localhost:8338"
-TIMEOUT_SECONDS = 30
+from devleaps.policies.client.config import ConfigManager
 
 
-def get_server_url() -> str:
-    return os.environ.get("HOOK_SERVER_URL", DEFAULT_SERVER_URL)
-
-
-def forward_hook(editor: str, payload: Dict[str, Any]) -> int:
-    server_url = get_server_url()
+def forward_hook(editor: str, bundles: List[str], payload: Dict[str, Any]) -> int:
+    config = ConfigManager.load_config()
+    server_url = ConfigManager.get_server_url(config)
+    default_behavior = ConfigManager.get_default_policy_behavior(config)
     hook_event_name = payload.get("hook_event_name")
 
     if not hook_event_name:
         print("Missing hook_event_name in payload", file=sys.stderr)
         return 2
 
-    # Direct path mapping: /policy/{editor}/{hook_event_name}
+    wrapped_payload = {
+        "bundles": bundles,
+        "default_policy_behavior": default_behavior,
+        "event": payload
+    }
+
     endpoint = f"/policy/{editor}/{hook_event_name}"
 
     try:
         response = requests.post(
             f"{server_url}{endpoint}",
-            json=payload,
-            timeout=TIMEOUT_SECONDS
+            json=wrapped_payload
         )
 
         if response.status_code != 200:
@@ -45,13 +45,7 @@ def forward_hook(editor: str, payload: Dict[str, Any]) -> int:
         print(f"Error: Cannot connect to policy server at {server_url}", file=sys.stderr)
         print("", file=sys.stderr)
         print("To start the server, run: devleaps-policy-server", file=sys.stderr)
-        print(f"Or set HOOK_SERVER_URL environment variable to point to your server", file=sys.stderr)
-        return 2
-    except requests.exceptions.Timeout:
-        print(f"Error: Policy server timeout after {TIMEOUT_SECONDS} seconds", file=sys.stderr)
-        print(f"Server: {server_url}", file=sys.stderr)
-        print("", file=sys.stderr)
-        print("The server may be overloaded or the policy evaluation is taking too long.", file=sys.stderr)
+        print(f"Or configure server_url in ~/.agent-policies/config.json", file=sys.stderr)
         return 2
     except Exception as e:
         print(f"Error: Unexpected failure communicating with policy server", file=sys.stderr)
@@ -61,16 +55,14 @@ def forward_hook(editor: str, payload: Dict[str, Any]) -> int:
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: client.py <editor> (e.g., claude-code or cursor)", file=sys.stderr)
-        sys.exit(2)
-
-    editor = sys.argv[1]
+    config = ConfigManager.load_config()
+    editor = ConfigManager.get_editor(config)
+    bundles = ConfigManager.get_enabled_bundles(config)
 
     try:
         hook_json = sys.stdin.read().strip()
         payload = json.loads(hook_json)
-        exit_code = forward_hook(editor, payload)
+        exit_code = forward_hook(editor, bundles, payload)
         sys.exit(exit_code)
     except json.JSONDecodeError as e:
         print(f"Invalid JSON in hook payload: {e}", file=sys.stderr)
