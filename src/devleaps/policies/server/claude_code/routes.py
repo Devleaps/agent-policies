@@ -32,36 +32,18 @@ router = APIRouter(prefix="/policy/claude-code")
 
 
 def _log_pretool_use_outcome(input_data: PreToolUseInput, result: PreToolUseOutput):
-    """Log the outcome of a PreToolUse hook with structured data."""
+    """Log the outcome of a PreToolUse hook with response body."""
     continue_status = "CONTINUE" if result.continue_ else "BLOCK"
+    response_body = result.model_dump(exclude_none=True) if hasattr(result, 'model_dump') else result
 
-    permission_decision = None
-    if result.hookSpecificOutput and result.hookSpecificOutput.permissionDecision:
-        permission_decision = result.hookSpecificOutput.permissionDecision.value
-
-    logger.info(
-        f"PreToolUse: {continue_status} {permission_decision}",
-        extra={
-            "hook": "PreToolUse",
-            "session_id": input_data.session_id,
-            "tool_name": input_data.tool_name.value if hasattr(input_data.tool_name, 'value') else str(input_data.tool_name),
-            "continue": result.continue_,
-            "permission": permission_decision,
-        }
-    )
+    logger.info(f"PreToolUse: {continue_status} | Response: {response_body}")
 
 
 def _log_generic_hook_outcome(hook_name: str, input_data, result):
-    """Log the outcome of a generic hook with structured data."""
+    """Log the outcome of a generic hook with response body."""
     outcome = "CONTINUE" if result.continue_ else "BLOCK"
-    logger.info(
-        f"{hook_name}: {outcome}",
-        extra={
-            "hook": hook_name,
-            "session_id": input_data.session_id,
-            "continue": result.continue_,
-        }
-    )
+    response_body = result.model_dump(exclude_none=True) if hasattr(result, 'model_dump') else result
+    logger.info(f"{hook_name}: {outcome} | Response: {response_body}")
 
 
 @router.post("/PreToolUse", response_model=PreToolUseOutput, response_model_exclude_none=True)
@@ -70,15 +52,8 @@ async def pre_tool_use_hook(wrapper: RequestWrapper) -> PreToolUseOutput:
     input_data = PreToolUseInput(**wrapper.event)
     bundles = wrapper.bundles
 
-    logger.debug(
-        "PreToolUse hook received",
-        extra={
-            "hook": "PreToolUse",
-            "session_id": input_data.session_id,
-            "tool_name": input_data.tool_name.value if hasattr(input_data.tool_name, 'value') else str(input_data.tool_name),
-            "bundles": bundles,
-        }
-    )
+    tool_name_str = input_data.tool_name.value if hasattr(input_data.tool_name, 'value') else str(input_data.tool_name)
+    logger.info(f"PreToolUse hook: {tool_name_str} in session {input_data.session_id}")
 
     generic_input = mapper.map_pre_tool_use_input(input_data)
 
