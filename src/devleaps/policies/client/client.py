@@ -11,6 +11,7 @@ from devleaps.policies.client.config import ConfigManager
 def forward_hook(editor: str, bundles: List[str], payload: Dict[str, Any]) -> int:
     config = ConfigManager.load_config()
     server_url = ConfigManager.get_server_url(config)
+    default_behavior = ConfigManager.get_default_policy_behavior(config)
     hook_event_name = payload.get("hook_event_name")
 
     if not hook_event_name:
@@ -19,6 +20,7 @@ def forward_hook(editor: str, bundles: List[str], payload: Dict[str, Any]) -> in
 
     wrapped_payload = {
         "bundles": bundles,
+        "default_policy_behavior": default_behavior,
         "event": payload
     }
 
