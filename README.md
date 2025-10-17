@@ -257,7 +257,8 @@ The client supports centralized configuration via JSON files:
 {
   "bundles": ["python", "git"],
   "editor": "claude-code",
-  "server_url": "http://localhost:8338"
+  "server_url": "http://localhost:8338",
+  "default_policy_behavior": "ask"
 }
 ```
 

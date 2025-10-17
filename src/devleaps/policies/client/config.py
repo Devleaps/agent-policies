@@ -6,6 +6,23 @@ Supports loading configuration from:
 2. Project directory: .agent-policies/config.json
 
 Configurations are merged with project-level settings taking precedence over home-level.
+
+Configuration Options:
+- bundles: List of policy bundles to enable (default: [])
+- editor: Editor name for policy routing (default: "claude-code")
+- server_url: URL of policy server (default: "http://localhost:8338")
+- default_policy_behavior: Default action for unknown policies (default: "ask")
+  * "allow": Permissive mode - allow unknown policies
+  * "ask": Default/recommended - ask user about unknown policies
+  * "deny": Strict/blocklist mode - deny unknown policies
+
+Example config (~/.agent-policies/config.json):
+{
+  "bundles": ["python-quality", "git-workflow"],
+  "editor": "claude-code",
+  "server_url": "http://localhost:8338",
+  "default_policy_behavior": "ask"
+}
 """
 
 import json
@@ -21,6 +38,7 @@ class ConfigManager:
         "bundles": [],
         "editor": "claude-code",
         "server_url": "http://localhost:8338",
+        "default_policy_behavior": "ask",  # Options: "allow", "ask", "deny"
     }
 
     @staticmethod
@@ -94,6 +112,21 @@ class ConfigManager:
         if config is None:
             config = ConfigManager.load_config()
         return config.get("server_url", "http://localhost:8338")
+
+    @staticmethod
+    def get_default_policy_behavior(config: Optional[Dict[str, Any]] = None) -> str:
+        """Get default policy behavior from config.
+
+        Returns:
+            One of: "allow" (permissive), "ask" (default), "deny" (strict)
+        """
+        if config is None:
+            config = ConfigManager.load_config()
+        behavior = config.get("default_policy_behavior", "ask").lower()
+        if behavior not in ("allow", "ask", "deny"):
+            print(f"Warning: Unknown default_policy_behavior '{behavior}', using 'ask'")
+            return "ask"
+        return behavior
 
     @staticmethod
     def ensure_config_directories() -> None:
