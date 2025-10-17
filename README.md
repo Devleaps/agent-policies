@@ -27,7 +27,7 @@ if re.match(r'^terraform\s+(fmt|plan)(?:\s|$)', command):
 
 ### Automating Guidance
 
-Aside from denying and allowing automatically, policies can also provide guidance:
+Aside from denying and allowing automatically, policies can also provide guidance through Post-* events:
 
 ```python
 if re.match(r'^python\s+test_', input_data.command):

@@ -11,13 +11,16 @@ from ..common.models import (
     PolicyAction,
     PolicyDecision,
     PolicyGuidance,
+    PostFileEditEvent,
+    PostToolUseEvent,
     PromptSubmitEvent,
     StopEvent,
+    StructuredPatch,
     ToolUseEvent,
 )
 from .api.enums import PermissionDecision, ToolName
 from .api.notification import NotificationInput, NotificationOutput
-from .api.post_tool_use import PostToolUseInput, PostToolUseOutput
+from .api.post_tool_use import PostToolUseInput, PostToolUseOutput, PostToolUseHookSpecificOutput
 from .api.pre_compact import PreCompactInput, PreCompactOutput
 from .api.pre_tool_use import (
     PreToolUseHookSpecificOutput,
@@ -42,10 +45,13 @@ def map_pre_tool_use_input(input_data: PreToolUseInput) -> Union[ToolUseEvent, F
     tool_name_str = input_data.tool_name.value if isinstance(input_data.tool_name, ToolName) else str(input_data.tool_name)
 
     if input_data.tool_name in [ToolName.EDIT, ToolName.WRITE]:
+        tool_input = input_data.tool_input or {}
+        file_path = tool_input.get('file_path') if isinstance(tool_input, dict) else None
+
         return FileEditEvent(
             session_id=input_data.session_id,
             source_client=SourceClient.CLAUDE_CODE,
-            file_path=getattr(input_data, 'file_path', None),
+            file_path=file_path,
             operation=tool_name_str,
             workspace_roots=None,
             source_event=input_data
@@ -75,14 +81,57 @@ def map_pre_tool_use_input(input_data: PreToolUseInput) -> Union[ToolUseEvent, F
     )
 
 
-def map_post_tool_use_input(input_data: PostToolUseInput) -> HookEvent:
-    """Map PostToolUse to HookEvent (generic post-execution hook)"""
-    return HookEvent(
+def map_post_tool_use_input(input_data: PostToolUseInput) -> Union[PostFileEditEvent, PostToolUseEvent]:
+    """Map PostToolUse to appropriate post-event type"""
+    tool_name_str = input_data.tool_name.value if isinstance(input_data.tool_name, ToolName) else str(input_data.tool_name)
+
+    # File edit/write operations map to PostFileEditEvent
+    if input_data.tool_name in [ToolName.EDIT, ToolName.WRITE]:
+        tool_input = input_data.tool_input or {}
+        tool_response = input_data.tool_response or {}
+
+        file_path = tool_input.get('file_path') if isinstance(tool_input, dict) else None
+        content = tool_response.get('content') if isinstance(tool_response, dict) else None
+
+        # Convert raw patch dicts to StructuredPatch objects
+        raw_patches = tool_response.get('structuredPatch') if isinstance(tool_response, dict) else None
+        structured_patch = None
+        if raw_patches:
+            structured_patch = [StructuredPatch(**patch) for patch in raw_patches]
+
+        return PostFileEditEvent(
+            session_id=input_data.session_id,
+            source_client=SourceClient.CLAUDE_CODE,
+            file_path=file_path,
+            operation=tool_name_str,
+            content=content,
+            structured_patch=structured_patch,
+            workspace_roots=None,
+            source_event=input_data
+        )
+
+    # All other tools map to PostToolUseEvent
+    command = None
+    parameters = None
+
+    tool_is_bash = input_data.tool_name == ToolName.BASH
+    tool_is_mcp = tool_name_str.startswith("mcp__")
+
+    if tool_is_bash and hasattr(input_data, 'command'):
+        command = input_data.command
+    else:
+        parameters = input_data.model_dump(exclude={'session_id', 'tool_name'})
+
+    return PostToolUseEvent(
         session_id=input_data.session_id,
+        tool_name=tool_name_str,
         source_client=SourceClient.CLAUDE_CODE,
-        hook_type="post_tool_use",
+        command=command,
+        parameters=parameters,
         workspace_roots=None,
-        source_event=input_data
+        source_event=input_data,
+        tool_is_bash=tool_is_bash,
+        tool_is_mcp=tool_is_mcp
     )
 
 
@@ -203,14 +252,12 @@ def map_to_pre_tool_use_output(
 ) -> PreToolUseOutput:
     """Map generic results to PreToolUseOutput"""
     decisions = [r for r in results if isinstance(r, PolicyDecision)]
+    guidances = [r for r in results if isinstance(r, PolicyGuidance)]
 
-    if not decisions:
+    if not decisions and not guidances:
         return default_output
 
-    final_decision = _find_highest_priority_decision(decisions)
-
-    if not final_decision:
-        return default_output
+    final_decision = _find_highest_priority_decision(decisions) if decisions else None
 
     permission_map = {
         PolicyAction.ALLOW: PermissionDecision.ALLOW,
@@ -219,13 +266,21 @@ def map_to_pre_tool_use_output(
         PolicyAction.HALT: PermissionDecision.DENY,
     }
 
-    reasons = [d.reason for d in decisions if d.action == final_decision.action and d.reason]
-    combined_reason = "\n".join(reasons) if reasons else None
+    reasons = [d.reason for d in decisions if d.action == final_decision.action and d.reason] if final_decision else []
+    guidance_texts = [g.content for g in guidances]
+
+    all_messages = reasons + guidance_texts
+    combined_reason = "\n".join(all_messages) if all_messages else None
+
+    # If we have a decision, use it; otherwise use the default permission from default_output
+    permission = permission_map[final_decision.action] if final_decision else default_output.hookSpecificOutput.permissionDecision
+    should_continue = (final_decision.action != PolicyAction.HALT) if final_decision else default_output.continue_
 
     return PreToolUseOutput(
-        continue_=(final_decision.action != PolicyAction.HALT),
+        continue_=should_continue,
+        systemMessage=combined_reason,
         hookSpecificOutput=PreToolUseHookSpecificOutput(
-            permissionDecision=permission_map[final_decision.action],
+            permissionDecision=permission,
             permissionDecisionReason=combined_reason
         )
     )
@@ -236,8 +291,30 @@ def map_to_post_tool_use_output(
     default_output: PostToolUseOutput
 ) -> PostToolUseOutput:
     """Map generic results to PostToolUseOutput"""
+    decisions = [r for r in results if isinstance(r, PolicyDecision)]
+    guidances = [r for r in results if isinstance(r, PolicyGuidance)]
+
+    if not decisions and not guidances:
+        return default_output
+
+    # Check for HALT
     halt_result = _check_for_halt_and_return(results, default_output, PostToolUseOutput)
-    return halt_result if halt_result else default_output
+    if halt_result:
+        return halt_result
+
+    # Collect all messages (reasons + guidance) for additionalContext
+    reasons = [d.reason for d in decisions if d.reason]
+    guidance_texts = [g.content for g in guidances]
+
+    all_messages = reasons + guidance_texts
+    additional_context = "\n".join(all_messages) if all_messages else None
+
+    return PostToolUseOutput(
+        continue_=True,
+        hookSpecificOutput=PostToolUseHookSpecificOutput(
+            additionalContext=additional_context
+        )
+    ) if additional_context else default_output
 
 
 def map_to_user_prompt_submit_output(
