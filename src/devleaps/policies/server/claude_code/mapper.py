@@ -8,6 +8,7 @@ from ..common.models import (
     POLICY_PRECEDENCE,
     FileEditEvent,
     HookEvent,
+    PatchLine,
     PolicyAction,
     PolicyDecision,
     PolicyGuidance,
@@ -35,6 +36,42 @@ from .api.session_start import (
 )
 from .api.stop import StopInput, StopOutput, SubagentStopInput, SubagentStopOutput
 from .api.user_prompt_submit import UserPromptSubmitInput, UserPromptSubmitOutput
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def _parse_patch_lines(raw_lines: List[str]) -> List[PatchLine]:
+    """
+    Parse raw patch lines (with +/- prefixes) into PatchLine objects.
+
+    Args:
+        raw_lines: List of diff lines (e.g., ["+# comment", " code", "-old_code"])
+
+    Returns:
+        List of PatchLine objects with operation and content separated
+    """
+    parsed_lines = []
+    for line in raw_lines:
+        if not line:
+            parsed_lines.append(PatchLine(operation="unchanged", content=""))
+            continue
+
+        # Check first character for operation type
+        if line[0] == '+':
+            operation = "added"
+            content = line[1:]
+        elif line[0] == '-':
+            operation = "removed"
+            content = line[1:]
+        else:  # space or anything else
+            operation = "unchanged"
+            content = line[1:] if len(line) > 0 and line[0] == ' ' else line
+
+        parsed_lines.append(PatchLine(operation=operation, content=content))
+
+    return parsed_lines
+
 
 # ============================================================================
 # INPUT MAPPERS: Claude Code → Generic
@@ -93,11 +130,25 @@ def map_post_tool_use_input(input_data: PostToolUseInput) -> Union[PostFileEditE
         file_path = tool_input.get('file_path') if isinstance(tool_input, dict) else None
         content = tool_response.get('content') if isinstance(tool_response, dict) else None
 
-        # Convert raw patch dicts to StructuredPatch objects
+        # Convert raw patch dicts to StructuredPatch objects with parsed lines
         raw_patches = tool_response.get('structuredPatch') if isinstance(tool_response, dict) else None
         structured_patch = None
         if raw_patches:
-            structured_patch = [StructuredPatch(**patch) for patch in raw_patches]
+            structured_patch = []
+            for patch in raw_patches:
+                # Parse the raw lines into PatchLine objects
+                raw_lines = patch.get('lines', [])
+                parsed_lines = _parse_patch_lines(raw_lines)
+
+                # Create StructuredPatch with parsed lines
+                parsed_patch = StructuredPatch(
+                    oldStart=patch.get('oldStart', 0),
+                    oldLines=patch.get('oldLines', 0),
+                    newStart=patch.get('newStart', 0),
+                    newLines=patch.get('newLines', 0),
+                    lines=parsed_lines
+                )
+                structured_patch.append(parsed_patch)
 
         return PostFileEditEvent(
             session_id=input_data.session_id,
