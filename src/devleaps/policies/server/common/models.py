@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Literal
 
 from pydantic import BaseModel
 
@@ -48,13 +48,19 @@ class PolicyGuidance:
     metadata: Optional[Dict[str, Any]] = None
 
 
+class PatchLine(BaseModel):
+    """Represents a single line in a patch with operation type and content separated"""
+    operation: Literal["added", "removed", "unchanged"]  # Whether line was added, removed, or unchanged
+    content: str  # The actual line content (without the +/- prefix)
+
+
 class StructuredPatch(BaseModel):
     """Represents a single patch in a structured diff"""
     oldStart: int  # Line number where old content starts
     oldLines: int  # Number of lines in old content
     newStart: int  # Line number where new content starts
     newLines: int  # Number of lines in new content
-    lines: List[str]  # Diff lines (prefixed with +/- or space)
+    lines: List[PatchLine]  # Parsed diff lines with operation and content separated
 
 
 @dataclass
