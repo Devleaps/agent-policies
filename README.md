@@ -20,22 +20,26 @@ if re.match(r'^terraform\s+(fmt|plan)(?:\s|$)', command):
     yield PolicyDecision(action=PolicyAction.ALLOW)
 ```
 
-> <img width="648" height="133" alt="Screenshot 2025-10-03 at 16 15 29" src="https://github.com/user-attachments/assets/4659a391-2e96-431f-85e7-7d3973f2d101" />
+In the image below, the agent is denied by policy from running `terraform apply`. The agent can then make decisions on what to do next, in this case it outputs that it will attempt a `terraform plan` as per the policy recommendation.
 
-> [!WARNING]  
-> Be aware when automatically allowing that Bash tools use strings can invole more than one underlying tool. Consider also commands such as `find` having unsafe options like `-exec`.
+> <img width="648" height="133" alt="Screenshot 2025-10-03 at 16 15 29" src="https://github.com/user-attachments/assets/4659a391-2e96-431f-85e7-7d3973f2d101" />
 
 ### Automating Guidance
 
 Aside from denying and allowing automatically, policies can also provide guidance through Post-* events:
 
 ```python
-if re.match(r'^python\s+test_', input_data.command):
-    yield PolicyGuidance(content="Consider using pytest instead of running test files directly")
+if comment_to_code_overlap >= 0.4:
+    yield PolicyHelper.guidance(
+        "Ensure comments add value beyond describing what's obvious from the code. "
+        "This comment may be redundant with the code it describes."
+    )
+    return
 ```
 
+In the image below, an agent makes a change which includes a comment that is detected as being potentially redundant. The guidance from the snippet is given as feedback to the change, after which the agent by itself decides to remove the redundant comment.
 
-> <img width="652" height="167" alt="Screenshot 2025-10-03 at 16 15 21" src="https://github.com/user-attachments/assets/5ee865d3-edd3-4c18-92d2-b984dd0582da" />
+> <img width="592" height="427" alt="Screenshot 2025-10-21 at 21 47 37" src="https://github.com/user-attachments/assets/a63a172b-d01d-473f-a765-97b2d266df7b" />
 
 ## Usage
 
@@ -205,6 +209,8 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
 }
 ```
 
+> [!WARNING]
+> Be aware when automatically allowing that Bash tools use strings can invole more than one underlying tool. Consider also commands such as `find` having unsafe options like `-exec`.
 </details>
 
 ### Configure Cursor
@@ -242,6 +248,8 @@ Create or edit `~/.cursor/hooks.json`:
 
 The `devleaps-policy-client` command will forward hook events to the policy server running on `localhost:8338`.
 
+> [!WARNING]
+> Be aware when automatically allowing that Bash tools use strings can invole more than one underlying tool. Consider also commands such as `find` having unsafe options like `-exec`.
 </details>
 
 ## Sessions
