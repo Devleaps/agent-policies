@@ -1,0 +1,15 @@
+apiVersion: devleaps.io/v1alpha1
+kind: BuildingBlock
+metadata:
+  name: agent-policies
+  title: "AI Agent Policies"
+  description: "Turn CLAUDE.md and Cursor Rules into hard guardrails that AI Agents cannot ignore. Supports Claude Code and Cursor (beta)."
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  links:
+    - url: https://pypi.org/project/devleaps-agent-policies/
+      title: PyPI Package
+      icon: code
+    - url: https://github.com/Devleaps/agent-policies
+      title: GitHub Repository
+      icon: github
