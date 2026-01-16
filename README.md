@@ -264,6 +264,22 @@ The `devleaps-policy-client` command will forward hook events to the policy serv
 > Be aware when automatically allowing that Bash tools use strings can invole more than one underlying tool. Consider also commands such as `find` having unsafe options like `-exec`.
 </details>
 
+### Uninstall
+
+To remove hooks from Claude Code:
+
+```bash
+devleaps-policy-client uninstall
+```
+
+To remove hooks from Cursor:
+
+```bash
+devleaps-policy-client uninstall cursor
+```
+
+This removes all `devleaps-policy-client` hooks from the respective editor configuration files.
+
 ## Sessions
 
 Each Claude Code or Cursor session receives a unique `session_id`. Policies can use this to track context across multiple hook events within the same session, enabling stateful policy decisions. See the [session state utility](devleaps/policies/server/session/state.py) to store and retrieve per-session data.
