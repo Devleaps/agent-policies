@@ -81,11 +81,18 @@ graph TB
 
 ### Installation
 
-Update your local profile with;
+Install from PyPI:
 
 ```bash
-# Add the bin directory to $PATH
-export PATH="$PATH:/path/to/agent-policies/bin/"
+pip install devleaps-agent-policies
+```
+
+Or for development:
+
+```bash
+git clone https://github.com/Devleaps/agent-policies.git
+cd agent-policies
+uv sync
 ```
 
 ### Running an Example Server
