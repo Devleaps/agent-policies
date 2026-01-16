@@ -134,9 +134,6 @@ def install_claude_hooks() -> int:
         with open(CLAUDE_SETTINGS_PATH, 'w') as f:
             json.dump(settings, f, indent=2)
         print(f"\n✓ Configuration saved to {CLAUDE_SETTINGS_PATH}")
-        print("\nNext steps:")
-        print("  1. Start a policy server: devleaps-policy-example-server")
-        print("  2. Launch Claude Code - policies will be enforced automatically")
     else:
         print("✓ All hooks already configured - no changes needed")
 
@@ -190,9 +187,6 @@ def install_cursor_hooks() -> int:
         with open(CURSOR_HOOKS_PATH, 'w') as f:
             json.dump(hooks_config, f, indent=2)
         print(f"\n✓ Configuration saved to {CURSOR_HOOKS_PATH}")
-        print("\nNext steps:")
-        print("  1. Start a policy server: devleaps-policy-example-server")
-        print("  2. Launch Cursor - policies will be enforced automatically")
     else:
         print("✓ All hooks already configured - no changes needed")
 
