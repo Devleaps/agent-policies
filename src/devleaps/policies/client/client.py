@@ -89,7 +89,8 @@ def install_claude_hooks() -> int:
     """Configure Claude Code hooks."""
     print("Configuring Claude Code hooks...\n")
 
-    # Load existing settings
+    ConfigManager.initialize_config()
+
     settings = {}
     if CLAUDE_SETTINGS_PATH.exists():
         try:
@@ -146,7 +147,8 @@ def install_cursor_hooks() -> int:
     """Configure Cursor hooks."""
     print("Configuring Cursor hooks...\n")
 
-    # Load existing hooks
+    ConfigManager.initialize_config()
+
     hooks_config = {"version": 1, "hooks": {}}
     if CURSOR_HOOKS_PATH.exists():
         try:

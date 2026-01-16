@@ -136,3 +136,20 @@ class ConfigManager:
 
         project_config_dir = Path.cwd() / ".agent-policies"
         project_config_dir.mkdir(parents=True, exist_ok=True)
+
+    @classmethod
+    def initialize_config(cls) -> None:
+        """Initialize default config file if it doesn't exist."""
+        home_config_path = Path.home() / ".agent-policies" / "config.json"
+
+        if home_config_path.exists():
+            return
+
+        # Ensure directory exists
+        home_config_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Write default config
+        with open(home_config_path, 'w') as f:
+            json.dump(cls.DEFAULT_CONFIG, f, indent=2)
+
+        print(f"✓ Created default configuration at {home_config_path}")
