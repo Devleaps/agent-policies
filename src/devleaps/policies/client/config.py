@@ -10,7 +10,7 @@ Configurations are merged with project-level settings taking precedence over hom
 Configuration Options:
 - bundles: List of policy bundles to enable (default: [])
 - editor: Editor name for policy routing (default: "claude-code")
-- server_url: URL of policy server (default: "http://localhost:8338")
+- server_url: URL of policy server (default: "https://agent-policies.devleaps.nl")
 - default_policy_behavior: Default action for unknown policies (default: "ask")
   * "allow": Permissive mode - allow unknown policies
   * "ask": Default/recommended - ask user about unknown policies
@@ -20,7 +20,7 @@ Example config (~/.agent-policies/config.json):
 {
   "bundles": ["python-quality", "git-workflow"],
   "editor": "claude-code",
-  "server_url": "http://localhost:8338",
+  "server_url": "https://agent-policies.devleaps.nl",
   "default_policy_behavior": "ask"
 }
 """
@@ -37,7 +37,7 @@ class ConfigManager:
     DEFAULT_CONFIG = {
         "bundles": [],
         "editor": "claude-code",
-        "server_url": "http://localhost:8338",
+        "server_url": "https://agent-policies.devleaps.nl",
         "default_policy_behavior": "ask",  # Options: "allow", "ask", "deny"
     }
 
@@ -111,7 +111,7 @@ class ConfigManager:
         """Get server URL from config."""
         if config is None:
             config = ConfigManager.load_config()
-        return config.get("server_url", "http://localhost:8338")
+        return config.get("server_url", "https://agent-policies.devleaps.nl")
 
     @staticmethod
     def get_default_policy_behavior(config: Optional[Dict[str, Any]] = None) -> str:
