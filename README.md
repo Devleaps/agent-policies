@@ -98,7 +98,13 @@ The example server runs on port 8338 by default and serves endpoints for both Cl
 
 ### Configure Claude Code
 
-Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.claude/settings.json`:
+Run the install command to automatically configure hooks:
+
+```bash
+devleaps-policy-client install
+```
+
+Or manually add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.claude/settings.json`:
 
 <details>
 <summary>Click to expand Claude Code configuration</summary>
@@ -215,7 +221,13 @@ Add `devleaps-policy-client` to your Claude Code hooks configuration in `~/.clau
 
 ### Configure Cursor
 
-Create or edit `~/.cursor/hooks.json`:
+Run the install command to automatically configure hooks:
+
+```bash
+devleaps-policy-client install cursor
+```
+
+Or manually create or edit `~/.cursor/hooks.json`:
 
 <details>
 <summary>Click to expand Cursor configuration</summary>
