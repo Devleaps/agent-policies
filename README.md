@@ -13,10 +13,15 @@ This framework supports **Claude Code**. Support for **Cursor** is in beta.
 Rule files can be forgotten or ignored completely by LLMs. Policies are unavoidable:
 
 ```python
-if re.match(r'^terraform\s+apply(?:\s|$)', command):
-    yield PolicyDecision(action=PolicyAction.DENY, reason="terraform apply is not allowed. Use `terraform plan` instead.")
+command = input_data.command.strip()
 
-if re.match(r'^terraform\s+(fmt|plan)(?:\s|$)', command):
+if command == "terraform apply":
+    yield PolicyDecision(
+        action=PolicyAction.DENY,
+        reason="terraform apply is not allowed. Use `terraform plan` instead."
+    )
+
+if command == "terraform plan":
     yield PolicyDecision(action=PolicyAction.ALLOW)
 ```
 
@@ -43,10 +48,10 @@ In the image below, an agent makes a change which includes a comment that is det
 
 ## Usage
 
-At DevLeaps we developed an internal policy set for AI Agents. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) as a starting point The example server contains:
-- A basic server setup demonstrating the use of policies and middleware.
-- Rudimentary policies showcasing how to automatically deny, allow and provide guidance.
-- Rudimentary middleware showcasing how multi-command tool use could be handled.
+At DevLeaps we developed an internal policy set for AI Agents. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) as a starting point. The example server contains:
+- A basic server setup demonstrating the use of policies and middleware
+- Simple policies using exact matching (`command == "terraform apply"`)
+- Middleware showcasing how multi-command tool use could be handled
 
 **To run the example server:**
 ```bash
@@ -54,6 +59,8 @@ devleaps-policy-example-server
 ```
 
 This starts a minimal server running just our example policies.
+
+**Note:** The example server uses simple string matching for demonstration purposes. For production use cases requiring sophisticated command parsing (analyzing arguments, flags, options) or declarative policy languages (OPA/Rego), you'll need to implement your own parsing logic. Alternatively, visit [DevLeaps](https://devleaps.nl) for production-ready policies built on shell language parsing and OPA-compatible policy evaluation.
 
 ## Architecture
 
