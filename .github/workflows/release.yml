@@ -43,12 +43,11 @@ jobs:
       - name: Publish to PyPI
         run: uv publish
 
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ inputs.version }}
-          release_name: v${{ inputs.version }}
-          draft: false
-          prerelease: false
+  homebrew-deploy:
+    name: Deploy to Homebrew
+    needs:
+      - release
+    uses: Devleaps/workflows/.github/workflows/homebrew-deploy.yaml@main
+    secrets: inherit
+    with:
+      package: agent-policies
