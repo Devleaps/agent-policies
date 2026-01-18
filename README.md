@@ -334,3 +334,22 @@ See the [uv example](devleaps/policies/example/main.py) for a working one-rule b
 ## Development
 
 This project is built with [uv](https://docs.astral.sh/uv/).
+
+## Release Process
+
+The package is published to PyPI and Homebrew automatically through GitHub Actions.
+
+### Publishing a New Version
+
+1. Trigger the [Release workflow](https://github.com/Devleaps/agent-policies/actions/workflows/release.yml)
+2. Enter the version number (e.g., `1.0.0`)
+3. The workflow will:
+   - Update version in `pyproject.toml`
+   - Create and push a git tag
+   - Build and publish to PyPI
+   - Create a GitHub release
+   - Trigger Homebrew formula update
+
+### Homebrew Integration
+
+After a successful PyPI publish, the workflow automatically triggers the `homebrew-deploy` reusable workflow which dispatches to `Devleaps/homebrew-brew` with the version and formula name. This allows the Homebrew formula (`agent-policies`) to be updated automatically.
