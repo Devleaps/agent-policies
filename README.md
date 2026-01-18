@@ -49,9 +49,8 @@ In the image below, an agent makes a change which includes a comment that is det
 ## Usage
 
 At DevLeaps we developed an internal policy set for AI Agents. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) as a starting point. The example server contains:
-- A basic server setup demonstrating the use of policies and middleware
+- A basic server setup demonstrating the use of policies
 - Simple policies using exact matching (`command == "terraform apply"`)
-- Middleware showcasing how multi-command tool use could be handled
 
 **To run the example server:**
 ```bash

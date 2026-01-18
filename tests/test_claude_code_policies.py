@@ -7,6 +7,7 @@ verifying that policies work correctly for PreToolUse and other hooks.
 
 import pytest
 
+from devleaps.policies.example.main import pip_rule, terraform_rule
 from devleaps.policies.server.common.enums import SourceClient
 from devleaps.policies.server.common.models import (
     PolicyAction,
@@ -21,16 +22,9 @@ from devleaps.policies.server.server import get_registry
 @pytest.fixture(scope="session", autouse=True)
 def setup_example_policies():
     """Setup example policies before running tests."""
-    from devleaps.policies.example.main import (
-        bash_split_middleware,
-        terraform_rule,
-        python_test_file_post_guidance_rule,
-    )
-
     registry = get_registry()
-    registry.register_middleware(ToolUseEvent, bash_split_middleware)
     registry.register_handler(ToolUseEvent, terraform_rule)
-    registry.register_handler(PostToolUseEvent, python_test_file_post_guidance_rule)
+    registry.register_handler(ToolUseEvent, pip_rule)
 
 
 def create_tool_use_event(command: str, tool_name: str = "Bash") -> ToolUseEvent:
@@ -71,10 +65,6 @@ class TestClaudeCodeBasicCommands:
         """Test terraform plan is allowed."""
         check_policy("terraform plan", PolicyAction.ALLOW)
 
-    def test_terraform_fmt_allowed(self):
-        """Test terraform fmt is allowed."""
-        check_policy("terraform fmt", PolicyAction.ALLOW)
-
 
 class TestClaudeCodeBlockedCommands:
     """Test commands that should be blocked."""
@@ -83,22 +73,9 @@ class TestClaudeCodeBlockedCommands:
         """Test terraform apply is denied."""
         check_policy("terraform apply", PolicyAction.DENY)
 
-    def test_terraform_apply_with_args_denied(self):
-        """Test terraform apply with arguments is denied."""
-        check_policy("terraform apply -auto-approve", PolicyAction.DENY)
-
-
-class TestClaudeCodeCommandSplitting:
-    """Test bash command splitting middleware."""
-
-    def test_chained_commands_all_allowed(self):
-        """Test chained commands where all are allowed."""
-        check_policy("terraform plan && terraform fmt", PolicyAction.ALLOW)
-
-    def test_chained_commands_one_denied(self):
-        """Test chained commands where one is denied."""
-        check_policy("terraform plan && terraform apply", PolicyAction.DENY)
-        check_policy("terraform apply && terraform plan", PolicyAction.DENY)
+    def test_pip_install_denied(self):
+        """Test pip install is denied."""
+        check_policy("pip install", PolicyAction.DENY)
 
 
 class TestClaudeCodeNonBashTools:
