@@ -48,9 +48,9 @@ In the image below, an agent makes a change which includes a comment that is det
 
 ## Usage
 
-At DevLeaps we developed an internal policy set for AI Agents. To create your own policy server, refer to the server module documentation and examples. For a basic example server implementation, see [agent-internal-policies](https://github.com/Devleaps/agent-internal-policies).
+This package provides the policy framework for AI agents. Use the hosted policy server at `https://agent-policies.devleaps.nl` or build your own policy server using the provided server components.
 
-**Note:** Example policy implementations use simple string matching for demonstration purposes. For production use cases requiring sophisticated command parsing (analyzing arguments, flags, options) or declarative policy languages (OPA/Rego), you'll need to implement your own parsing logic. Alternatively, visit [DevLeaps](https://devleaps.nl) for production-ready policies built on shell language parsing and OPA-compatible policy evaluation.
+For production-ready policies with sophisticated command parsing and declarative policy languages, visit [DevLeaps](https://devleaps.nl).
 
 ## Architecture
 
@@ -323,8 +323,6 @@ Policies can be organized into bundles to group related rules for specific workf
 - Bundle-specific policies are only enforced when enabled in config
 - Multiple bundles can be enabled: set `"bundles": ["bundle1", "bundle2"]` in config
 - Bundles can coordinate through shared session state
-
-See the [uv example](devleaps/policies/example/main.py) for a working one-rule bundle implementation.
 
 ## Development
 
