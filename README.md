@@ -48,18 +48,9 @@ In the image below, an agent makes a change which includes a comment that is det
 
 ## Usage
 
-At DevLeaps we developed an internal policy set for AI Agents. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) as a starting point. The example server contains:
-- A basic server setup demonstrating the use of policies
-- Simple policies using exact matching (`command == "terraform apply"`)
+At DevLeaps we developed an internal policy set for AI Agents. To create your own policy server, refer to the server module documentation and examples. For a basic example server implementation, see [agent-internal-policies](https://github.com/Devleaps/agent-internal-policies).
 
-**To run the example server:**
-```bash
-devleaps-policy-example-server
-```
-
-This starts a minimal server running just our example policies.
-
-**Note:** The example server uses simple string matching for demonstration purposes. For production use cases requiring sophisticated command parsing (analyzing arguments, flags, options) or declarative policy languages (OPA/Rego), you'll need to implement your own parsing logic. Alternatively, visit [DevLeaps](https://devleaps.nl) for production-ready policies built on shell language parsing and OPA-compatible policy evaluation.
+**Note:** Example policy implementations use simple string matching for demonstration purposes. For production use cases requiring sophisticated command parsing (analyzing arguments, flags, options) or declarative policy languages (OPA/Rego), you'll need to implement your own parsing logic. Alternatively, visit [DevLeaps](https://devleaps.nl) for production-ready policies built on shell language parsing and OPA-compatible policy evaluation.
 
 ## Architecture
 
@@ -87,10 +78,16 @@ graph TB
 
 ### Installation
 
-Install from PyPI:
+Install the client only:
 
 ```bash
 pip install devleaps-agent-policies
+```
+
+Install with server components (required for running policy servers):
+
+```bash
+pip install devleaps-agent-policies[server]
 ```
 
 Or for development:
@@ -98,16 +95,8 @@ Or for development:
 ```bash
 git clone https://github.com/Devleaps/agent-policies.git
 cd agent-policies
-uv sync
+uv sync --extra server
 ```
-
-### Running an Example Server
-
-```bash
-devleaps-policy-example-server
-```
-
-The example server runs on port 8338 by default and serves endpoints for both Claude Code and Cursor.
 
 ### Configure Claude Code
 
