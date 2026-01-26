@@ -23,13 +23,15 @@ classifiers = [
 ]
 
 dependencies = [
-    "fastapi==0.118.0",
-    "pydantic==2.12.5",
     "requests==2.32.5",
-    "uvicorn==0.37.0",
 ]
 
 [project.optional-dependencies]
+server = [
+    "fastapi==0.118.0",
+    "pydantic==2.12.5",
+    "uvicorn==0.37.0",
+]
 dev = [
     "httpx==0.28.1",
     "pytest==8.4.2",
@@ -37,7 +39,6 @@ dev = [
 
 [project.scripts]
 devleaps-policy-client = "devleaps.policies.client.client:main"
-devleaps-policy-example-server = "devleaps.policies.example.main:main"
 
 [build-system]
 requires = ["hatchling"]
