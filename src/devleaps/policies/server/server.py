@@ -1,6 +1,12 @@
 import logging
 
-from fastapi import FastAPI
+try:
+    from fastapi import FastAPI
+except ImportError as e:
+    raise ImportError(
+        "Server components require additional dependencies. "
+        "Install with: pip install devleaps-agent-policies[server]"
+    ) from e
 
 from .claude_code import router as claude_code_router
 from .cursor import router as cursor_router

@@ -7,7 +7,6 @@ verifying that policies work correctly for PreToolUse and other hooks.
 
 import pytest
 
-from devleaps.policies.example.main import pip_rule, terraform_rule
 from devleaps.policies.server.common.enums import SourceClient
 from devleaps.policies.server.common.models import (
     PolicyAction,
@@ -17,6 +16,37 @@ from devleaps.policies.server.common.models import (
 )
 from devleaps.policies.server.executor import execute_handlers_generic
 from devleaps.policies.server.server import get_registry
+
+
+def terraform_rule(input_data: ToolUseEvent):
+    """Example policy: Block terraform apply, allow terraform plan."""
+    if not input_data.tool_is_bash:
+        return
+
+    command = input_data.command.strip()
+
+    if command == "terraform apply":
+        yield PolicyDecision(
+            action=PolicyAction.DENY,
+            reason="terraform apply is not allowed. Use `terraform plan` instead."
+        )
+
+    if command == "terraform plan":
+        yield PolicyDecision(action=PolicyAction.ALLOW)
+
+
+def pip_rule(input_data: ToolUseEvent):
+    """Example policy: Block pip install."""
+    if not input_data.tool_is_bash:
+        return
+
+    command = input_data.command.strip()
+
+    if command == "pip install":
+        yield PolicyDecision(
+            action=PolicyAction.DENY,
+            reason="pip install is not allowed."
+        )
 
 
 @pytest.fixture(scope="session", autouse=True)
