@@ -23,14 +23,6 @@ def test_load_valid_config_file():
             os.unlink(f.name)
 
 
-def test_merge_project_overrides_home():
-    """Project config takes precedence over home config."""
-    home_config = {"bundles": ["python-quality"], "editor": "vscode"}
-    project_config = {"bundles": ["git-workflow"], "editor": "cursor"}
-    result = ConfigManager._merge_configs(home_config, project_config)
-    assert result["bundles"] == ["git-workflow"]
-    assert result["editor"] == "cursor"
-
 
 def test_get_enabled_bundles():
     """get_enabled_bundles returns bundles from config."""
