@@ -45,21 +45,11 @@ if comment_to_code_overlap >= 0.4:
 In the image below, an agent makes a change which includes a comment that is detected as being potentially redundant. The guidance from the snippet is given as feedback to the change, after which the agent by itself decides to remove the redundant comment.
 
 > <img width="592" height="427" alt="Screenshot 2025-10-21 at 21 47 37" src="https://github.com/user-attachments/assets/a63a172b-d01d-473f-a765-97b2d266df7b" />
+This library provides the **client component** for policy enforcement. It forwards hook events from your editor to a policy server.
 
-## Usage
+**To implement your own policy server:** Build a server that accepts events and returns policy decisions. This package provides the client, event types, and decision models. Server implementation (FastAPI app, policies, command parsing) is separate.
 
-At DevLeaps we developed an internal policy set for AI Agents. To create your own, refer to the [example server](https://github.com/Devleaps/agent-policies/blob/main/devleaps/policies/example/main.py) as a starting point. The example server contains:
-- A basic server setup demonstrating the use of policies
-- Simple policies using exact matching (`command == "terraform apply"`)
-
-**To run the example server:**
-```bash
-devleaps-policy-example-server
-```
-
-This starts a minimal server running just our example policies.
-
-**Note:** The example server uses simple string matching for demonstration purposes. For production use cases requiring sophisticated command parsing (analyzing arguments, flags, options) or declarative policy languages (OPA/Rego), you'll need to implement your own parsing logic. Alternatively, visit [DevLeaps](https://devleaps.nl) for production-ready policies built on shell language parsing and OPA-compatible policy evaluation.
+**Note:** As of v2.0, this package is client-only. For production policy servers, contact [DevLeaps](https://devleaps.nl).
 
 ## Architecture
 
@@ -70,7 +60,7 @@ graph TB
         Client[devleaps-policy-client]
     end
 
-    subgraph "Policy Server"
+    subgraph "Policy Server (You Implement)"
         Server[HTTP API]
         Policies[Your policies<br/>kubectl, terraform, git, python, etc.]
     end
@@ -98,16 +88,8 @@ Or for development:
 ```bash
 git clone https://github.com/Devleaps/agent-policies.git
 cd agent-policies
-uv sync
 ```
 
-### Running an Example Server
-
-```bash
-devleaps-policy-example-server
-```
-
-The example server runs on port 8338 by default and serves endpoints for both Claude Code and Cursor.
 
 ### Configure Claude Code
 
@@ -295,7 +277,7 @@ This removes all `devleaps-policy-client` hooks from the respective editor confi
 
 ## Sessions
 
-Each Claude Code or Cursor session receives a unique `session_id`. Policies can use this to track context across multiple hook events within the same session, enabling stateful policy decisions. See the [session state utility](devleaps/policies/server/session/state.py) to store and retrieve per-session data.
+Each Claude Code or Cursor session receives a unique `session_id`. Policies can use this to track context across multiple hook events within the same session, enabling stateful policy decisions. See the [session state utility](server-side session management in your implementation) to store and retrieve per-session data.
 
 ## Configuration
 
@@ -335,7 +317,7 @@ Policies can be organized into bundles to group related rules for specific workf
 - Multiple bundles can be enabled: set `"bundles": ["bundle1", "bundle2"]` in config
 - Bundles can coordinate through shared session state
 
-See the [uv example](devleaps/policies/example/main.py) for a working one-rule bundle implementation.
+Bundles are configured client-side and enforced server-side.
 
 ## Development
 
